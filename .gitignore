@@ -1,0 +1,23 @@
+# Java/Spring Boot
+backend/demo/target/
+backend/demo/.mvn/
+backend/demo/mvnw
+backend/demo/mvnw.cmd
+backend/demo/.mvnw
+backend/demo/.mvnw.cmd
+backend/demo/uploads/
+
+# Node.js/React
+frontend/node_modules/
+frontend/.env
+frontend/build/
+
+# IDE files
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Logs
+*.logbackend/demo/src/main/resources/uploads/
