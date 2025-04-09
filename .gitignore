@@ -5,7 +5,7 @@ backend/demo/mvnw
 backend/demo/mvnw.cmd
 backend/demo/.mvnw
 backend/demo/.mvnw.cmd
-backend/demo/uploads/
+backend/demo/src/main/resources/uploads/
 
 # Node.js/React
 frontend/node_modules/
@@ -20,4 +20,4 @@ frontend/build/
 .DS_Store
 
 # Logs
-*.logbackend/demo/src/main/resources/uploads/
+*.log

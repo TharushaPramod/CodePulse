@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import PostItem from './PostItem'; // Import the new PostItem component
 import './App.css';
 
 function App() {
@@ -9,29 +10,31 @@ function App() {
     const [editingPost, setEditingPost] = useState(null);
     const [editDescription, setEditDescription] = useState('');
     const [editFiles, setEditFiles] = useState([]);
-    const [isLoading, setIsLoading] = useState(false); // For fetching posts
-    const [isSubmitting, setIsSubmitting] = useState(false); // For creating/editing posts
-    const [error, setError] = useState(''); // For error messages
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
     const API_BASE_URL = 'http://localhost:8080';
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            setIsLoading(true);
-            setError(''); // Clear previous errors
-            try {
-                const response = await axios.get(`${API_BASE_URL}/api/posts`);
-                console.log('Fetched posts:', response.data);
-                setPosts(response.data);
-            } catch (error) {
-                console.error('Error fetching posts:', error);
-                setError('Failed to load posts. Please try again later.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchPosts();
+    // Fetch posts from the backend
+    const fetchPosts = useCallback(async () => {
+        setIsLoading(true);
+        setError('');
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/posts`);
+            console.log('Fetched posts:', response.data);
+            setPosts(response.data);
+        } catch (error) {
+            console.error('Error fetching posts:', error);
+            setError('Failed to load posts. Please try again later.');
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
 
     const handleFileChange = (e) => {
         const maxSize = 5 * 1024 * 1024; // 5MB in bytes
@@ -50,7 +53,7 @@ function App() {
         }
 
         setFiles(selectedFiles);
-        setError(''); // Clear error if validation passes
+        setError('');
     };
 
     const handleEditFileChange = (e) => {
@@ -70,25 +73,25 @@ function App() {
         }
 
         setEditFiles(selectedFiles);
-        setError(''); // Clear error if validation passes
+        setError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setError(''); // Clear previous errors
+        setError('');
         const formData = new FormData();
         formData.append('description', description);
         files.forEach(file => formData.append('files', file));
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/posts`, formData, {
+            await axios.post(`${API_BASE_URL}/api/posts`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setPosts([response.data, ...posts]);
             setDescription('');
             setFiles([]);
             document.querySelector('input[type="file"]').value = null;
+            await fetchPosts(); // Refresh the post list
         } catch (error) {
             console.error('Error creating post:', error);
             setError('Failed to create post: ' + (error.response?.data?.message || error.message));
@@ -97,40 +100,40 @@ function App() {
         }
     };
 
-    const handleDelete = async (postId) => {
-        setError(''); // Clear previous errors
+    const handleDelete = useCallback(async (postId) => {
+        setError('');
         try {
             await axios.delete(`${API_BASE_URL}/api/posts/${postId}`);
-            setPosts(posts.filter(p => p.id !== postId));
+            setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
         } catch (error) {
             console.error('Error deleting post:', error);
             setError('Failed to delete post: ' + (error.response?.data?.message || error.message));
         }
-    };
+    }, []);
 
-    const handleEditStart = (post) => {
+    const handleEditStart = useCallback((post) => {
         setEditingPost(post.id);
         setEditDescription(post.description);
         setEditFiles([]);
-        setError(''); // Clear previous errors
-    };
+        setError('');
+    }, []);
 
     const handleEditSubmit = async (e, postId) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setError(''); // Clear previous errors
+        setError('');
         const formData = new FormData();
         formData.append('description', editDescription);
         editFiles.forEach(file => formData.append('files', file));
 
         try {
-            const response = await axios.put(`${API_BASE_URL}/api/posts/${postId}`, formData, {
+            await axios.put(`${API_BASE_URL}/api/posts/${postId}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setPosts(posts.map(p => p.id === postId ? response.data : p));
             setEditingPost(null);
             setEditDescription('');
             setEditFiles([]);
+            await fetchPosts(); // Refresh the post list
         } catch (error) {
             console.error('Error updating post:', error);
             setError('Failed to update post: ' + (error.response?.data?.message || error.message));
@@ -174,66 +177,22 @@ function App() {
                     <p>No posts yet.</p>
                 ) : (
                     posts.map(post => (
-                        <div key={post.id} className="post">
-                            {editingPost === post.id ? (
-                                <form onSubmit={(e) => handleEditSubmit(e, post.id)}>
-                                    <textarea
-                                        value={editDescription}
-                                        onChange={(e) => setEditDescription(e.target.value)}
-                                        placeholder="Edit your post..."
-                                        disabled={isSubmitting}
-                                    />
-                                    <input
-                                        type="file"
-                                        multiple
-                                        onChange={handleEditFileChange}
-                                        accept="image/*"
-                                        disabled={isSubmitting}
-                                    />
-                                    <div className="post-buttons">
-                                        <button className="save-btn" type="submit" disabled={isSubmitting}>
-                                            {isSubmitting ? 'Saving...' : 'Save'}
-                                        </button>
-                                        <button
-                                            className="cancel-btn"
-                                            type="button"
-                                            onClick={() => setEditingPost(null)}
-                                            disabled={isSubmitting}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </form>
-                            ) : (
-                                <>
-                                    <p>{post.description}</p>
-                                    {post.mediaFiles && post.mediaFiles.length > 0 ? (
-                                        post.mediaFiles.map((file, index) => (
-                                            <img
-                                                key={index}
-                                                src={`${API_BASE_URL}${file}`}
-                                                alt="Post media"
-                                                className="post-image"
-                                                onError={(e) => {
-                                                    e.target.src = '/fallback-image.jpg';
-                                                    console.error(`Failed to load image: ${file}`);
-                                                }}
-                                            />
-                                        ))
-                                    ) : (
-                                        <p className="no-media">No media files.</p>
-                                    )}
-                                    <div className="post-buttons">
-                                        <button className="delete-btn" onClick={() => handleDelete(post.id)}>
-                                            Delete
-                                        </button>
-                                        <button className="edit-btn" onClick={() => handleEditStart(post)}>
-                                            Edit
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                        <PostItem
+                            key={post.id}
+                            post={post}
+                            editingPost={editingPost}
+                            editDescription={editDescription}
+                            setEditDescription={setEditDescription}
+                            editFiles={editFiles}
+                            setEditFiles={setEditFiles}
+                            isSubmitting={isSubmitting}
+                            handleEditFileChange={handleEditFileChange}
+                            handleEditSubmit={handleEditSubmit}
+                            setEditingPost={setEditingPost}
+                            handleDelete={handleDelete}
+                            handleEditStart={handleEditStart}
+                            API_BASE_URL={API_BASE_URL}
+                        />
                     ))
                 )}
             </div>
