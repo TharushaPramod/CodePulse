@@ -5,6 +5,9 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Comment from './pages/Comment';
+import PostViwe from './pages/PostView';
+import PostDetails from './pages/PostDetails';
+
 
 
 
@@ -14,6 +17,8 @@ root.render(
     <Routes>
       <Route path='/' element={<App/>} />
       <Route path='/comment' element={<Comment/>} />
+      <Route path='/view' element={<PostViwe/>} />
+      <Route path="/post/:postId" element={<PostDetails />} />
  
      
 
