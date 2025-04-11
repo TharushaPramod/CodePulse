@@ -9,6 +9,8 @@ function PostList() {
   const API_BASE_URL = 'http://localhost:8080';
   const navigate = useNavigate();
 
+// fetch post details Using state// by id
+
   const fetchPosts = useCallback(async () => {
     const response = await axios.get(`${API_BASE_URL}/api/posts`);
     console.log('Fetched posts:', response.data);
@@ -22,6 +24,10 @@ function PostList() {
   const handleCommentClick = (post) => {
     navigate(`/post/${post.id}`, { state: { post } }); // Pass the post data via state
   };
+
+  //-------------------------------------------------------------------------------
+
+  
 
   return (
     <div className="app-container">
@@ -73,7 +79,14 @@ function PostList() {
           </table>
         )}
       </div>
+
+      <div className='comment_section'>
+        
+        </div>
     </div>
+
+ 
+
   );
 }
 

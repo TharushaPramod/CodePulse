@@ -1,5 +1,7 @@
 package com.example.demo.model;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
@@ -8,7 +10,9 @@ import lombok.Data;
 @Data // Lombok: generates getters, setters, etc.
 public class Comment {
     @Id
-    private String id; // MongoDB uses String for IDs by default
+    private String id;
+    private String postId; // To associate the comment with a post
+    private Long userId; // To associate the comment with a user
     private String content;
-    private String author;
+    private LocalDateTime createdAt;
 }
