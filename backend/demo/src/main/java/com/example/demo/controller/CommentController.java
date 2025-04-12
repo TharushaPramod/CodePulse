@@ -1,8 +1,10 @@
+// CommentController.java
 package com.example.demo.controller;
 
 import com.example.demo.model.Comment;
 import com.example.demo.repository.CommentRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,10 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/comments")
-@CrossOrigin
-
+@CrossOrigin(origins = "http://localhost:3000")
 public class CommentController {
-
 
     @Autowired
     private CommentRepository commentRepository;
@@ -21,6 +21,7 @@ public class CommentController {
     // Add a comment
     @PostMapping
     public Comment addComment(@RequestBody Comment comment) {
+        comment.setCreatedAt(LocalDateTime.now()); // Set the creation time
         return commentRepository.save(comment);
     }
 
@@ -28,6 +29,12 @@ public class CommentController {
     @GetMapping
     public List<Comment> getAllComments() {
         return commentRepository.findAll();
+    }
+
+    // View comments by postId
+    @GetMapping("/post/{postId}")
+    public List<Comment> getCommentsByPostId(@PathVariable String postId) {
+        return commentRepository.findByPostId(postId);
     }
 
     // View a single comment by ID
@@ -44,7 +51,7 @@ public class CommentController {
         return commentRepository.findById(id)
                 .map(comment -> {
                     comment.setContent(updatedComment.getContent());
-                    comment.setAuthor(updatedComment.getAuthor());
+                    comment.setUserId(updatedComment.getUserId());
                     return ResponseEntity.ok(commentRepository.save(comment));
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -59,12 +66,4 @@ public class CommentController {
         }
         return ResponseEntity.notFound().build();
     }
-
-
-
-    // @GetMapping("/getComment")
-    // public String getComment(){
-    //     return "more comments";
-    // }
-    
 }
