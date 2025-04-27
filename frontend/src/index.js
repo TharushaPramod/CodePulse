@@ -7,6 +7,8 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Comment from './pages/Comment';
 import PostViwe from './pages/PostView';
 import PostDetails from './pages/PostDetails';
+import Register from './pages/Register';
+import Login from './pages/Login';
 
 
 
@@ -18,6 +20,8 @@ root.render(
       <Route path='/' element={<App/>} />
       <Route path='/comment' element={<Comment/>} />
       <Route path='/view' element={<PostViwe/>} />
+      <Route path='/register' element={<Register/>} />
+      <Route path='/login' element={<Login/>} />
       <Route path="/post/:postId" element={<PostDetails />} />
  
      
