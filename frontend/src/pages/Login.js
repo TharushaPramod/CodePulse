@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import './Register.css';
 
-function Register() {
+
+function Login() {
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: ''
   });
@@ -17,20 +16,19 @@ function Register() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleRegister = async () => {
+  const handleLogin = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/api/users/user', {
-        name: formData.name,
+      const response = await axios.post('http://localhost:8080/api/users/login', {
         email: formData.email,
-        password: parseInt(formData.password) // Convert to number to match backend User model
+        password: parseInt(formData.password) // Convert to number to match backend, adjust if password is a string
       });
 
-      setMessage(`Registration successful for ${response.data.name}!`);
-      setFormData({ name: '', email: '', password: '' });
+      setMessage(`Login successful for ${response.data.email}!`);
+      setFormData({ email: '', password: '' });
       
-      // Navigate to Login page after a short delay to show success message
+      // Navigate to home page after a short delay to show success message
       setTimeout(() => {
-        navigate('/login'); // Adjust the path to match your route for Login.js
+        navigate('/view'); // Adjust the path to match your route for the home page
       }, 1000); // 1-second delay
     } catch (error) {
       setMessage(`Error: ${error.response?.data?.message || error.message}`);
@@ -40,18 +38,7 @@ function Register() {
   return (
     <div className="app-container">
       <div className="form-container">
-        <h2>Register</h2>
-        <div className="form-group">
-          <label htmlFor="name">Name</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Enter your name"
-          />
-        </div>
+        <h2>Login</h2>
         <div className="form-group">
           <label htmlFor="email">Email</label>
           <input
@@ -74,7 +61,7 @@ function Register() {
             placeholder="Enter your password"
           />
         </div>
-        <button onClick={handleRegister}>Register</button>
+        <button onClick={handleLogin}>Login</button>
         {message && (
           <p className={message.includes('Error') ? 'error-message' : 'success-message'}>
             {message}
@@ -85,4 +72,4 @@ function Register() {
   );
 }
 
-export default Register;
+export default Login;
