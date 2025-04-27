@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.LearningPlan;
-import com.example.demo.service.LearningPlanService;
+import com.example.demo.repository.LearningPlanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,29 +17,34 @@ import java.util.List;
 @RequestMapping("/api/learning-plans")
 @CrossOrigin(origins = "http://localhost:3000")
 public class LearningPlanController {
+
     @Autowired
-    private LearningPlanService service;
+    private LearningPlanRepository repository;
 
     private final Path rootLocation = Paths.get("uploads");
 
     @PostMapping
     public LearningPlan createPlan(@RequestBody LearningPlan plan) {
-        return service.save(plan);
+        return repository.save(plan);
     }
 
     @GetMapping
     public List<LearningPlan> getAllPlans() {
-        return service.findAll();
+        return repository.findAll();
     }
 
     @PutMapping("/{id}")
     public LearningPlan updatePlan(@PathVariable String id, @RequestBody LearningPlan plan) {
-        return service.update(id, plan);
+        plan.setId(id);
+        return repository.save(plan);
     }
 
     @DeleteMapping("/{id}")
     public void deletePlan(@PathVariable String id) {
-        service.delete(id);
+        if (!repository.existsById(id)) {
+            throw new RuntimeException("Learning Plan not found with ID: " + id);
+        }
+        repository.deleteById(id);
     }
 
     @PostMapping("/upload")

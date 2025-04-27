@@ -51,6 +51,7 @@ const LearningPlansPage = () => {
                 if (['mp4', 'mov'].includes(fileExtension)) mediaType = 'Video';
                 else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) mediaType = 'Picture';
                 else if (['mp3', 'wav'].includes(fileExtension)) mediaType = 'Audio';
+                else if (['.pdf'].includes(fileExtension)) mediaType = 'PDF';
                 const updatedTopics = [...form.topics];
                 updatedTopics[topicIndex].resources[resourceIndex].filePath = filePath;
                 updatedTopics[topicIndex].resources[resourceIndex].type = mediaType;
@@ -235,7 +236,7 @@ const LearningPlansPage = () => {
                                         placeholder="Enter resource content (URL or description)"
                                     />
                                 </div>
-                                {(resource.type === 'Video' || resource.type === 'Picture' || resource.type === 'Audio') && (
+                                {(resource.type === 'Video' || resource.type === 'Picture' || resource.type === 'Audio' || resource.type === 'PDF') && (
                                     <div className="form-group">
                                         <label>Upload {resource.type}:</label>
                                         <input
@@ -243,37 +244,46 @@ const LearningPlansPage = () => {
                                             accept={
                                                 resource.type === 'Video' ? '.mp4,.mov' :
                                                 resource.type === 'Picture' ? '.jpg,.jpeg,.png' :
-                                                resource.type === 'Audio' ? '.mp3,.wav' : ''
+                                                resource.type === 'Audio' ? '.mp3,.wav' :
+                                                resource.type === 'PDF' ? '.pdf':''
                                             }
                                             onChange={(e) => handleFileChange(e, topicIndex, resourceIndex)}
                                         />
                                         {resource.filePath && (
-                                            <p>
-                                                Uploaded: {resource.filePath.split('/').pop()}
-                                                {resource.type === 'Picture' && (
-                                                    <img
-                                                        src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`}
-                                                        alt="Preview"
-                                                        style={{ maxWidth: '100px' }}
-                                                        onError={(e) => { e.target.style.display = 'none'; console.error('Image load failed'); }}
-                                                    />
-                                                )}
-                                                {resource.type === 'Video' && (
-                                                    <video controls style={{ maxWidth: '200px' }} onError={(e) => console.error('Video load failed')}>
-                                                        <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="video/mp4" />
-                                                        <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="video/webm" />
-                                                        Your browser does not support the video tag.
-                                                    </video>
-                                                )}
-                                                {resource.type === 'Audio' && (
-                                                    <audio controls onError={(e) => console.error('Audio load failed')}>
-                                                        <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="audio/mp3" />
-                                                        <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="audio/wav" />
-                                                        Your browser does not support the audio element.
-                                                    </audio>
-                                                )}
-                                            </p>
+                                        <div>
+                                            <p>Uploaded: {resource.filePath.split('/').pop()}</p>
+                                            {resource.type === 'Picture' && (
+                                            <img
+                                                src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`}
+                                                alt="Preview"
+                                                style={{ maxWidth: '100px' }}
+                                                onError={(e) => { e.target.style.display = 'none'; console.error('Image load failed'); }}
+                                            />
+                                            )}
+                                            {resource.type === 'Video' && (
+                                            <video controls style={{ maxWidth: '200px' }} onError={(e) => console.error('Video load failed')}>
+                                                <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="video/mp4" />
+                                                <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="video/webm" />
+                                                Your browser does not support the video tag.
+                                            </video>
+                                            )}
+                                            {resource.type === 'Audio' && (
+                                            <audio controls onError={(e) => console.error('Audio load failed')}>
+                                                <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="audio/mp3" />
+                                                <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="audio/wav" />
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                            )}
+                                            {resource.type === 'PDF' && (
+                                            <iframe
+                                                src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`}
+                                                title="PDF Preview"
+                                                style={{ width: '100%', height: '400px', marginTop: '10px' }}
+                                            />
+                                            )}
+                                        </div>
                                         )}
+
                                     </div>
                                 )}
                                 <button
