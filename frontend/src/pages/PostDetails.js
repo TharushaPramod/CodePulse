@@ -1,8 +1,7 @@
-// src/pages/PostDetails.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
-import '../css/view.css';
+import './Post.css';
 
 function PostDetails() {
   const { state } = useLocation();
@@ -10,12 +9,12 @@ function PostDetails() {
   const post = state?.post;
 
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState({
-    content: '',
-  });
+  const [newComment, setNewComment] = useState({ content: '' });
+  const [editComment, setEditComment] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const API_BASE_URL = 'http://localhost:8080';
 
-  // Fetch comments for the specific post on component mount
   useEffect(() => {
     if (post) {
       fetchComments();
@@ -23,43 +22,82 @@ function PostDetails() {
   }, [post]);
 
   const fetchComments = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:8080/api/comments/post/${post.id}`);
+      const response = await axios.get(`${API_BASE_URL}/api/comments/post/${post.id}`);
       setComments(response.data || []);
+      setError(null);
     } catch (error) {
       console.error('Error fetching comments:', error);
       setError('Failed to load comments.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Handle form input changes for adding a new comment
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewComment({ ...newComment, [name]: value });
+    if (editComment) {
+      setEditComment({ ...editComment, [name]: value });
+    } else {
+      setNewComment({ ...newComment, [name]: value });
+    }
   };
 
-  // Add a new comment
-  const handleAddComment = async (e) => {
+  const handleSubmitComment = async (e) => {
     e.preventDefault();
-    if (!newComment.content.trim()) {
+    const content = editComment ? editComment.content : newComment.content;
+
+    if (!content.trim()) {
       setError('Please enter a comment.');
       return;
     }
 
-    const commentToAdd = { // payload
-      postId: post.id, // Use post.id directly
-      userId: post.userId, // Use post.userId directly
-      content: newComment.content,
-    };
-
+    setLoading(true);
     try {
-      await axios.post('http://localhost:8080/api/comments', commentToAdd);
-      setNewComment({ content: '' }); // Reset the form
-      fetchComments(); // Refresh the comments list
+      if (editComment) {
+        await axios.put(`${API_BASE_URL}/api/comments/${editComment.id}`, {
+          content: editComment.content,
+          userId: editComment.userId,
+          postId: editComment.postId,
+        });
+        setEditComment(null);
+      } else {
+        await axios.post(`${API_BASE_URL}/api/comments`, {
+          postId: post.id,
+          userId: post.userId,
+          content: newComment.content,
+        });
+        setNewComment({ content: '' });
+      }
+
+      fetchComments();
       setError(null);
     } catch (error) {
-      console.error('Error adding comment:', error);
-      setError('Failed to add comment. Please try again.');
+      console.error('Error submitting comment:', error);
+      setError('Failed to submit comment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditComment = (comment) => {
+    setEditComment({ ...comment });
+  };
+
+  const handleDeleteComment = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+
+    setLoading(true);
+    try {
+      await axios.delete(`${API_BASE_URL}/api/comments/${id}`);
+      fetchComments();
+      setError(null);
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      setError('Failed to delete comment. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,101 +107,111 @@ function PostDetails() {
 
   if (!post) {
     return (
-      <div className="app-container">
-        <div className="post-details">
-          <p>Post not found.</p>
-          <button onClick={handleBackClick}>Back to Posts</button>
-        </div>
+      <div>
+        <p>Post not found.</p>
+        <button onClick={handleBackClick}>Back to Posts</button>
       </div>
     );
   }
 
   return (
-    <div className="app-container">
-      <div className="post-details">
-        <h2>Post Details</h2>
-        <div className="post-card">
-          <p><strong>ID:</strong> {post.id}</p>
-          <p><strong>User ID:</strong> {post.userId}</p>
-          <p><strong>Description:</strong> {post.description}</p>
-          <p><strong>Media Files:</strong></p>
-          {post.mediaFiles && post.mediaFiles.length > 0 ? (
-            post.mediaFiles.map((file, index) => (
-              <img
-                key={index}
-                src={`http://localhost:8080${file}`}
-                alt={`Media ${index}`}
-                style={{ width: '100px', height: '100px', marginRight: '10px' }}
-              />
-            ))
-          ) : (
-            <p>No media</p>
-          )}
-          <p><strong>Created At:</strong> {new Date(post.createdAt).toLocaleString()}</p>
+    <div className='post-comment-section'>
+      <div className='comment-section-sub'>
+        <div className="post-details">
+          <div className='comment-section-name'><strong>UserName:</strong> {post.userId}</div>
+          <div className='comment-section-media'>
+            {post.mediaFiles && post.mediaFiles.length > 0 ? (
+              post.mediaFiles.map((file, index) => (
+                <img
+                  key={index}
+                  src={`${API_BASE_URL}${file}`}
+                  alt={`Media ${index}`}
+                />
+              ))
+            ) : (
+              <p>No media</p>
+            )}
+          </div>
+          <div className='comment-section-description'>{post.description}</div>
+          <div>{new Date(post.createdAt).toLocaleString()}</div>
         </div>
 
-        {/* Comment Form */}
-        <div className="comments-section">
-          <h3>Add a Comment</h3>
-          {error && <p className="error">{error}</p>}
-          <form onSubmit={handleAddComment} className="comment-form">
-            <div className="form-group">
-              <label>Post ID</label>
-              <input
-                type="text"
-                name="postId"
-                value={post.id}
-                readOnly // Make it read-only since it's not meant to be changed
-                className="form-input"
-              />
+        <div className="add-comment-section">
+          <h3>{editComment ? 'Edit Comment' : 'Add a Comment'}</h3>
+          {error && <div className="error-message">{error}</div>}
+          <form onSubmit={handleSubmitComment} className='comment-form-section'>
+            <textarea
+              className='comment-text-area'
+              name="content"
+              value={editComment ? editComment.content : newComment.content}
+              onChange={handleInputChange}
+              placeholder={editComment ? 'Edit your comment...' : 'Add a comment...'}
+              rows="3"
+              required
+              disabled={loading}
+            />
+            <div className="form-button-group">
+              <button type="submit" disabled={loading} className='add-comment'>
+                {loading
+                  ? (editComment ? 'Updating...' : 'Adding...')
+                  : (editComment ? 'Update' : 'Add Comment')}
+              </button>
+              {editComment && (
+                <button
+                  type="button"
+                  onClick={() => setEditComment(null)}
+                  disabled={loading}
+                  className='add-comment cancel-edit'
+                >
+                  Cancel
+                </button>
+              )}
             </div>
-            <div className="form-group">
-              <label>User ID</label>
-              <input
-                type="number"
-                name="userId"
-                value={post.userId}
-                readOnly // Make it read-only since it's not meant to be changed
-                className="form-input"
-              />
-            </div>
-            <div className="form-group">
-              <label>Comment (Required)</label>
-              <textarea
-                name="content"
-                value={newComment.content}
-                onChange={handleInputChange}
-                placeholder="Add a comment..."
-                rows="3"
-                required
-                className="form-textarea"
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">
-              Add Comment
-            </button>
           </form>
+        </div>
 
-          {/* List of Comments */}
+        <div className='all-comments-container'>
           <h3>Comments</h3>
-          {comments.length === 0 ? (
+          {loading && <p>Loading...</p>}
+          {!loading && comments.length === 0 ? (
             <p>No comments yet.</p>
           ) : (
-            <div className="comments-list">
-              {comments.map((comment) => (
-                <div key={comment.id} className="comment">
-                  <p><strong>User ID:</strong> {comment.userId}</p>
-                  <p>{comment.content}</p>
-                  <small>Posted on: {new Date(comment.createdAt).toLocaleString()}</small>
+            comments.map((comment) => (
+              <div key={comment.id} className='all-comments-container-sub'>
+                <div className='all-comments'>
+                  <p className='all-comment-section-userName'>
+                    <strong>User Name:</strong> {comment.userId}
+                  </p>
+                  <div>
+                    <p>{comment.content}</p>
+                    <small className='commented-date'>
+                      Posted on: {new Date(comment.createdAt).toLocaleString()}
+                    </small>
+                  </div>
+                  <div className='update-delete-comment-btn-container'>
+                    <button
+                      className='update-delete-comment-btn'
+                      onClick={() => handleEditComment(comment)}
+                      disabled={loading}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className='update-delete-comment-btn-delete'
+                      onClick={() => handleDeleteComment(comment.id)}
+                      disabled={loading}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))
           )}
-        </div>
 
-        <button onClick={handleBackClick} style={{ marginTop: '20px' }}>
-          Back to Posts
-        </button>
+          
+        </div>
+        <button className='back-to-post-btn' onClick={handleBackClick}>Back to Posts</button>
       </div>
     </div>
   );

@@ -1,0 +1,105 @@
+
+.post-details{
+    width: 75%;
+   
+    margin-top: 75px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+}
+.comment-section-sub{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+align-items: center;
+}
+.comment-section-media{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+    border-radius: 10px;
+    width: 75%;
+    height: 200px;
+}
+.comment-section-name{
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+.comment-section-description{
+    margin-bottom: 25px;
+}
+.add-comment-section{
+    width: 75%;
+}
+
+  .comment-form-section{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+ 
+
+  }
+ 
+ 
+  .comment-text-area{
+    width: 90%;
+    border-radius: 10px;
+    
+  }
+
+  .add-comment{
+    width: 100%;
+    margin-left: 10px;
+    border-radius: 25px;
+   margin-bottom: 2px;
+  }
+
+  .all-comments{
+    display: flex;
+    justify-content:space-between;
+    margin-bottom: 20px;
+    
+
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+    border-radius: 10px;
+
+  }
+  .all-comments-container{
+    width: 75%;
+  }
+  .all-comments-container-sub{
+    width: 100%;
+  }
+  .update-delete-comment-btn{
+    border-radius: 25px;
+    margin: 2px;
+   
+  }
+  .all-comment-section-userName{
+    margin-left: 10px;
+  }
+  .update-delete-comment-btn-container{
+    margin: 10px;
+  }
+  .update-delete-comment-btn-delete{
+    border-radius: 25px;
+    margin: 2px;
+    background-color: red;
+  }
+  .commented-date{
+    margin-top: 100px;
+  }
+  .back-to-post-btn{
+    margin: 25px;
+    width: 75%
+  }
