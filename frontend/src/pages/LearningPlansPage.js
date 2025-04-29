@@ -6,6 +6,7 @@ const LearningPlansPage = () => {
     const [plans, setPlans] = useState([]);
     const [form, setForm] = useState({ id: '', title: '', description: '', timeline: '', topics: [] });
     const [expandedPlan, setExpandedPlan] = useState(null);
+    const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
 
     useEffect(() => {
         fetchPlans();
@@ -51,7 +52,8 @@ const LearningPlansPage = () => {
                 if (['mp4', 'mov'].includes(fileExtension)) mediaType = 'Video';
                 else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) mediaType = 'Picture';
                 else if (['mp3', 'wav'].includes(fileExtension)) mediaType = 'Audio';
-                else if (['.pdf'].includes(fileExtension)) mediaType = 'PDF';
+                else if (fileExtension === 'pdf') mediaType = 'PDF';
+                
                 const updatedTopics = [...form.topics];
                 updatedTopics[topicIndex].resources[resourceIndex].filePath = filePath;
                 updatedTopics[topicIndex].resources[resourceIndex].type = mediaType;
@@ -91,7 +93,12 @@ const LearningPlansPage = () => {
     const savePlan = async () => {
         console.log('Saving plan:', form);
         try {
-            const planData = { title: form.title, description: form.description, timeline: form.timeline, topics: form.topics };
+            const planData = { 
+                title: form.title, 
+                description: form.description, 
+                timeline: form.timeline, 
+                topics: form.topics 
+            };
             if (form.id) {
                 await axios.put(`http://localhost:8080/api/learning-plans/${form.id}`, planData);
             } else {
@@ -133,10 +140,41 @@ const LearningPlansPage = () => {
         setExpandedPlan(expandedPlan === index ? null : index);
     };
 
+    const openVideoModal = (videoUrl) => {
+        setVideoModal({ isOpen: true, url: videoUrl });
+    };
+
+    const closeVideoModal = () => {
+        setVideoModal({ isOpen: false, url: '' });
+    };
+
+    const downloadFile = (filePath, fileName) => {
+        const link = document.createElement('a');
+        link.href = `http://localhost:8080/uploads/${filePath.split('/').pop()}`;
+        link.download = fileName || filePath.split('/').pop();
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="container">
-            <h1>My Learning Plans</h1>
-            <p className="intro-text">Plan your coding journey</p>
+            {videoModal.isOpen && (
+                <div className="video-modal">
+                    <div className="video-modal-content">
+                        <span className="close-modal" onClick={closeVideoModal}>×</span>
+                        <video controls autoPlay style={{ width: '100%' }}>
+                            <source src={`http://localhost:8080/uploads/${videoModal.url.split('/').pop()}`} type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+            )}
+
+            <header className="page-header">
+                <h1>My Learning Plans</h1>
+                <p className="intro-text">Plan your coding journey</p>
+            </header>
 
             <div className="form-section">
                 <h2>{form.id ? 'Edit Plan' : 'Create a New Learning Plan'}</h2>
@@ -261,29 +299,46 @@ const LearningPlansPage = () => {
                                             />
                                             )}
                                             {resource.type === 'Video' && (
-                                            <video controls style={{ maxWidth: '200px' }} onError={(e) => console.error('Video load failed')}>
-                                                <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="video/mp4" />
-                                                <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="video/webm" />
-                                                Your browser does not support the video tag.
-                                            </video>
+                                            <div>
+                                                <video 
+                                                    controls 
+                                                    style={{ maxWidth: '200px' }} 
+                                                    onError={(e) => console.error('Video load failed')}
+                                                >
+                                                    <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="video/mp4" />
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                                <button 
+                                                    className="play-fullscreen-btn"
+                                                    onClick={() => openVideoModal(resource.filePath)}
+                                                >
+                                                    Play Fullscreen
+                                                </button>
+                                            </div>
                                             )}
                                             {resource.type === 'Audio' && (
                                             <audio controls onError={(e) => console.error('Audio load failed')}>
                                                 <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="audio/mp3" />
-                                                <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="audio/wav" />
                                                 Your browser does not support the audio element.
                                             </audio>
                                             )}
                                             {resource.type === 'PDF' && (
-                                            <iframe
-                                                src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`}
-                                                title="PDF Preview"
-                                                style={{ width: '100%', height: '400px', marginTop: '10px' }}
-                                            />
+                                            <div>
+                                                <iframe
+                                                    src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`}
+                                                    title="PDF Preview"
+                                                    style={{ width: '100%', height: '400px', marginTop: '10px' }}
+                                                />
+                                                <button 
+                                                    className="download-btn"
+                                                    onClick={() => downloadFile(resource.filePath, resource.title || 'document.pdf')}
+                                                >
+                                                    Download PDF
+                                                </button>
+                                            </div>
                                             )}
                                         </div>
                                         )}
-
                                     </div>
                                 )}
                                 <button
@@ -339,31 +394,36 @@ const LearningPlansPage = () => {
                                                             <a href={resource.content} target="_blank" rel="noopener noreferrer">
                                                                 {resource.content}
                                                             </a>
-                                                        ) : (resource.type === 'Video' || resource.type === 'Picture' || resource.type === 'Audio') && resource.filePath ? (
-                                                            <>
-                                                                {resource.type === 'Picture' && (
-                                                                    <img
-                                                                        src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`}
-                                                                        alt="Preview"
-                                                                        style={{ maxWidth: '100px' }}
-                                                                        onError={(e) => { e.target.style.display = 'none'; console.error('Image load failed'); }}
-                                                                    />
-                                                                )}
-                                                                {resource.type === 'Video' && (
-                                                                    <video controls style={{ maxWidth: '200px' }} onError={(e) => console.error('Video load failed')}>
-                                                                        <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="video/mp4" />
-                                                                        <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="video/webm" />
-                                                                        Your browser does not support the video tag.
-                                                                    </video>
-                                                                )}
-                                                                {resource.type === 'Audio' && (
-                                                                    <audio controls onError={(e) => console.error('Audio load failed')}>
-                                                                        <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="audio/mp3" />
-                                                                        <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="audio/wav" />
-                                                                        Your browser does not support the audio element.
-                                                                    </audio>
-                                                                )}
-                                                            </>
+                                                        ) : resource.type === 'Video' && resource.filePath ? (
+                                                            <div>
+                                                                <button 
+                                                                    className="play-btn"
+                                                                    onClick={() => openVideoModal(resource.filePath)}
+                                                                >
+                                                                    Play Video
+                                                                </button>
+                                                            </div>
+                                                        ) : resource.type === 'Picture' && resource.filePath ? (
+                                                            <img
+                                                                src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`}
+                                                                alt={resource.title}
+                                                                style={{ maxWidth: '100px' }}
+                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                            />
+                                                        ) : resource.type === 'Audio' && resource.filePath ? (
+                                                            <audio controls>
+                                                                <source src={`http://localhost:8080/uploads/${resource.filePath.split('/').pop()}`} type="audio/mp3" />
+                                                                Your browser does not support the audio element.
+                                                            </audio>
+                                                        ) : resource.type === 'PDF' && resource.filePath ? (
+                                                            <div>
+                                                                <button 
+                                                                    className="download-btn"
+                                                                    onClick={() => downloadFile(resource.filePath, resource.title || 'document.pdf')}
+                                                                >
+                                                                    Download PDF
+                                                                </button>
+                                                            </div>
                                                         ) : (
                                                             resource.content
                                                         )}
@@ -372,12 +432,14 @@ const LearningPlansPage = () => {
                                             ))}
                                         </div>
                                     ))}
-                                    <button className="edit-btn" onClick={() => editPlan(plan)}>
-                                        Edit
-                                    </button>
-                                    <button className="delete-btn" onClick={() => deletePlan(plan.id)}>
-                                        Delete
-                                    </button>
+                                    <div className="plan-actions">
+                                        <button className="edit-btn" onClick={() => editPlan(plan)}>
+                                            Edit
+                                        </button>
+                                        <button className="delete-btn" onClick={() => deletePlan(plan.id)}>
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

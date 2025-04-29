@@ -1,14 +1,14 @@
 package com.example.demo.model;
 
-public class Resource {
+public class LearningResource {
     private String title;
     private String type;
     private String content;
     private String filePath;
 
-    public Resource() {}
+    public LearningResource() {}
 
-    public Resource(String title, String type, String content, String filePath) {
+    public LearningResource(String title, String type, String content, String filePath) {
         this.title = title;
         this.type = type;
         this.content = content;

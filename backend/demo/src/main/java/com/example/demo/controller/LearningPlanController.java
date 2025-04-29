@@ -1,11 +1,11 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.LearningPlan;
+import com.example.demo.model.LearningResource;
 import com.example.demo.repository.LearningPlanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,22 +23,26 @@ public class LearningPlanController {
 
     private final Path rootLocation = Paths.get("uploads");
 
+    // Create a learning plan
     @PostMapping
     public LearningPlan createPlan(@RequestBody LearningPlan plan) {
         return repository.save(plan);
     }
 
+    // Get all learning plans
     @GetMapping
     public List<LearningPlan> getAllPlans() {
         return repository.findAll();
     }
 
+    // Update a learning plan
     @PutMapping("/{id}")
     public LearningPlan updatePlan(@PathVariable String id, @RequestBody LearningPlan plan) {
         plan.setId(id);
         return repository.save(plan);
     }
 
+    // Delete a learning plan
     @DeleteMapping("/{id}")
     public void deletePlan(@PathVariable String id) {
         if (!repository.existsById(id)) {
@@ -47,8 +51,9 @@ public class LearningPlanController {
         repository.deleteById(id);
     }
 
+    // Handle file upload
     @PostMapping("/upload")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file) throws IOException {
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("learningPlanId") String learningPlanId) throws IOException {
         if (file.isEmpty()) {
             throw new RuntimeException("Failed to store empty file");
         }
@@ -56,14 +61,26 @@ public class LearningPlanController {
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename(); // Avoid overwrites with timestamp
         Path destinationFile = rootLocation.resolve(fileName).normalize().toAbsolutePath();
         file.transferTo(destinationFile);
-        return destinationFile.toString();
+
+        // Create a new Resource object
+        LearningResource resource = new LearningResource(file.getOriginalFilename(), "file", "uploaded", destinationFile.toString());
+        
+        // Add this resource to the appropriate learning plan
+        LearningPlan learningPlan = repository.findById(learningPlanId)
+                .orElseThrow(() -> new RuntimeException("Learning Plan not found"));
+        learningPlan.getTopics().forEach(topic -> topic.getResources().add(resource));
+
+        repository.save(learningPlan);
+
+        return "File uploaded successfully: " + fileName;
     }
 
+    // Serve uploaded file
     @GetMapping("/uploads/{filename:.+}")
-    public Resource serveFile(@PathVariable String filename) throws IOException {
+    public org.springframework.core.io.Resource serveFile(@PathVariable String filename) throws IOException {
         Path file = rootLocation.resolve(filename).normalize();
         System.out.println("Serving file from: " + file.toString());
-        Resource resource = new UrlResource(file.toUri());
+        org.springframework.core.io.Resource resource = new UrlResource(file.toUri());
         if (resource.exists() || resource.isReadable()) {
             return resource;
         } else {
