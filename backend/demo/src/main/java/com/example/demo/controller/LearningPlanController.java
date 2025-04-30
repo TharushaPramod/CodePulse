@@ -62,10 +62,10 @@ public class LearningPlanController {
         Path destinationFile = rootLocation.resolve(fileName).normalize().toAbsolutePath();
         file.transferTo(destinationFile);
 
-        // Create a new Resource object
+        
         LearningResource resource = new LearningResource(file.getOriginalFilename(), "file", "uploaded", destinationFile.toString());
         
-        // Add this resource to the appropriate learning plan
+      
         LearningPlan learningPlan = repository.findById(learningPlanId)
                 .orElseThrow(() -> new RuntimeException("Learning Plan not found"));
         learningPlan.getTopics().forEach(topic -> topic.getResources().add(resource));
@@ -75,7 +75,7 @@ public class LearningPlanController {
         return "File uploaded successfully: " + fileName;
     }
 
-    // Serve uploaded file
+    
     @GetMapping("/uploads/{filename:.+}")
     public org.springframework.core.io.Resource serveFile(@PathVariable String filename) throws IOException {
         Path file = rootLocation.resolve(filename).normalize();
