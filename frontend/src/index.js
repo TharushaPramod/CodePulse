@@ -8,6 +8,10 @@ import Comment from './pages/Comment';
 import PostViwe from './pages/PostView';
 import PostDetails from './pages/PostDetails';
 
+import CreatePage from './pages/ProgressUpdate/CreatePage';
+import UpdatePage from './pages/ProgressUpdate/UpdatePage';
+import ViewPage from './pages/ProgressUpdate/ViewPage';
+
 
 
 
@@ -18,7 +22,11 @@ root.render(
       <Route path='/' element={<App/>} />
       <Route path='/comment' element={<Comment/>} />
       <Route path='/view' element={<PostViwe/>} />
+      
       <Route path="/post/:postId" element={<PostDetails />} />
+      <Route path="/progress/create" element={<CreatePage />} />
+      <Route path="/progress/update/:id" element={<UpdatePage />} />
+      <Route path="/progress/learningview" element={<ViewPage />} />
  
      
 
