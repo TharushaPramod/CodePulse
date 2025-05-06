@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Post.css';
+import UpdateIcon from '@mui/icons-material/Update';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+
 
 function PostDetails() {
   const { state } = useLocation();
@@ -118,11 +122,11 @@ function PostDetails() {
     <div className='post-comment-section'>
       <div className='comment-section-sub'>
         <div className="post-details">
-          <div className='comment-section-name'><strong>UserName:</strong> {post.userId}</div>
+         
           <div className='comment-section-media'>
             {post.mediaFiles && post.mediaFiles.length > 0 ? (
               post.mediaFiles.map((file, index) => (
-                <img
+                <img className='img'
                   key={index}
                   src={`${API_BASE_URL}${file}`}
                   alt={`Media ${index}`}
@@ -132,8 +136,12 @@ function PostDetails() {
               <p>No media</p>
             )}
           </div>
+          <div className='comment-section-post-all-deatils'>
+          <div className='comment-section-name'><strong>UserName:</strong> {post.userId}</div>
           <div className='comment-section-description'>{post.description}</div>
-          <div>{new Date(post.createdAt).toLocaleString()}</div>
+          <div className='comment-seection-post-date'>{new Date(post.createdAt).toLocaleString()}</div>
+          </div>
+         
         </div>
 
         <div className="add-comment-section">
@@ -189,20 +197,21 @@ function PostDetails() {
                     </small>
                   </div>
                   <div className='update-delete-comment-btn-container'>
-                    <button
-                      className='update-delete-comment-btn'
+                    <UpdateIcon
+                     
                       onClick={() => handleEditComment(comment)}
                       disabled={loading}
                     >
-                      Edit
-                    </button>
-                    <button
-                      className='update-delete-comment-btn-delete'
+                     
+                    </UpdateIcon>
+                    <DeleteIcon
+                    
+                  
                       onClick={() => handleDeleteComment(comment.id)}
                       disabled={loading}
                     >
-                      Delete
-                    </button>
+                     
+                    </DeleteIcon>
                   </div>
                 </div>
               </div>

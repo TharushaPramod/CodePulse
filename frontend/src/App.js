@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import PostItem from './PostItem'; // Import the new PostItem component
+import PostItem from './PostItem';
 import './App.css';
 
 function App() {
@@ -16,7 +16,6 @@ function App() {
 
     const API_BASE_URL = 'http://localhost:8080';
 
-    // Fetch posts from the backend
     const fetchPosts = useCallback(async () => {
         setIsLoading(true);
         setError('');
@@ -91,7 +90,7 @@ function App() {
             setDescription('');
             setFiles([]);
             document.querySelector('input[type="file"]').value = null;
-            await fetchPosts(); // Refresh the post list
+            await fetchPosts();
         } catch (error) {
             console.error('Error creating post:', error);
             setError('Failed to create post: ' + (error.response?.data?.message || error.message));
@@ -133,7 +132,7 @@ function App() {
             setEditingPost(null);
             setEditDescription('');
             setEditFiles([]);
-            await fetchPosts(); // Refresh the post list
+            await fetchPosts();
         } catch (error) {
             console.error('Error updating post:', error);
             setError('Failed to update post: ' + (error.response?.data?.message || error.message));

@@ -15,16 +15,12 @@ const PostItem = ({
     handleEditStart,
     API_BASE_URL
 }) => {
-    // State to track if an image has failed to load (to prevent repeated onError calls)
     const [failedImages, setFailedImages] = useState(new Set());
-
-    // Log to debug re-rendering
-    console.log(`Rendering PostItem for post ${post.id}`);
 
     const handleImageError = (file, e) => {
         if (!failedImages.has(file)) {
             setFailedImages(prev => new Set(prev).add(file));
-            e.target.src = '/fallback-image.jpg';
+            e.target.src = '/fallback-image.jpg'; // Ensure this file exists in the public folder
             console.error(`Failed to load image: ${file}`);
         }
     };
@@ -66,7 +62,7 @@ const PostItem = ({
                     {post.mediaFiles && post.mediaFiles.length > 0 ? (
                         post.mediaFiles.map((file, index) => (
                             <img
-                                key={`${post.id}-${index}`} // Use a unique key
+                                key={`${post.id}-${index}`}
                                 src={`${API_BASE_URL}${file}`}
                                 alt="Post media"
                                 className="post-image"

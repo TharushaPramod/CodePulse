@@ -2,6 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './PostView.css'
+import Sidenavbar from '../components/Sidenavbar';
+import CommentIcon from '@mui/icons-material/Comment';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+
+
 
 function PostList() {
   const [posts, setPosts] = useState([]);
@@ -28,6 +33,12 @@ function PostList() {
 
   return (
     <div className='main-container'>
+      <div className='navbar'>
+        <Sidenavbar/>
+      </div>
+    
+      
+      
     <div className='post-view-container'>
      
       {posts.length === 0 ? (
@@ -35,15 +46,13 @@ function PostList() {
       ) : (
         <div className='all-post'>
           {posts.map((post) => (
-             <div className='postssss'>
+           
             <div key={post.id} className='one-post'>
-             
-              <div className='user_name'>
-                <h3>User Name: {post.userId}</h3>
-              </div>
+            
               <div className='media-container'>
                 {post.mediaFiles && post.mediaFiles.length > 0 ? (
                   <img
+                    className='img'
                     src={`${API_BASE_URL}${post.mediaFiles[0]}`}
                     alt="Post media"
                   />
@@ -53,21 +62,36 @@ function PostList() {
                   </div>
                 )}
               </div>
-              <div className='post-description'>
-              <h5 className='description'>description</h5>
-              <p className='description-container'> {post.description}</p>
-          
+             
+              <div className='post_all_details'>
+             
+                 
+                  <h3 className='post_user'>User Name: {post.userId}</h3>
+                 
+                               
+                  <p className='description-container'> {post.description}</p> 
+                
+              
+                       <span className='post-date'>Created At: {new Date(post.createdAt).toLocaleString()}</span>
+             
+
+                  
+                    <div className='btn-container'>
+                    
+                    <CommentIcon onClick={() => handleCommentClick(post)}  className='btn'></CommentIcon>
+                    <ThumbUpIcon className='btn'></ThumbUpIcon>
+                    </div>
+
+
+
               </div>
-              <div className='post-date'>
-                <span>Created At: {new Date(post.createdAt).toLocaleString()}</span>
-                </div> 
-                <div className='btn-container'>
-                <button onClick={() => handleCommentClick(post)} className='btn-comment'>
-                  Comment
-                </button>
-                </div>
+             
+             
+            
+            
+             
               </div>
-            </div>
+            
           ))}
         </div>
       )}

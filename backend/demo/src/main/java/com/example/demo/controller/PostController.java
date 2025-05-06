@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequestMapping("/api/posts")
 public class PostController {
 
-    private static final String UPLOAD_DIR = "src/main/resources/uploads/"; // Define upload directory
+    private static final String UPLOAD_DIR = "uploads/"; // Root-level uploads directory
 
     @Autowired
     private PostRepository postRepository;
@@ -74,7 +74,18 @@ public class PostController {
         post.setDescription(description);
 
         if (files != null && files.length > 0) {
-            // Optionally delete old files here if needed
+            // Delete old files
+            List<String> oldFilePaths = post.getMediaFiles();
+            if (oldFilePaths != null) {
+                for (String filePath : oldFilePaths) {
+                    File file = new File(UPLOAD_DIR + filePath.substring("/uploads/".length()));
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                }
+            }
+
+            // Save new files
             List<String> filePaths = new ArrayList<>();
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
@@ -99,7 +110,7 @@ public class PostController {
             return ResponseEntity.notFound().build();
         }
 
-        // Optionally delete associated files
+        // Delete associated files
         List<String> filePaths = post.getMediaFiles();
         if (filePaths != null) {
             for (String filePath : filePaths) {
