@@ -1,20 +1,35 @@
-// src/pages/PostList.js
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import '../css/view.css';
+import { useNavigate, useLocation } from 'react-router-dom';
+import './PostView.css';
+import Sidenavbar from '../components/Sidenavbar';
+import CommentIcon from '@mui/icons-material/Comment';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 
 function PostList() {
   const [posts, setPosts] = useState([]);
   const API_BASE_URL = 'http://localhost:8080';
   const navigate = useNavigate();
+  const location = useLocation();
 
-// fetch post details Using state// by id
+  const userName = localStorage.getItem('userName') || 'Guest';
+  const userId = localStorage.getItem('userId') || 'Guest';
+
+  useEffect(() => {
+    if (!userName || userName === 'Guest') {
+      console.log('No userName found, redirecting to login');
+      navigate('/login');
+    }
+  }, [userName, navigate]);
 
   const fetchPosts = useCallback(async () => {
-    const response = await axios.get(`${API_BASE_URL}/api/posts`);
-    console.log('Fetched posts:', response.data);
-    setPosts(response.data);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/posts`);
+      console.log('Fetched posts:', response.data);
+      setPosts(response.data);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -22,71 +37,66 @@ function PostList() {
   }, [fetchPosts]);
 
   const handleCommentClick = (post) => {
-    navigate(`/post/${post.id}`, { state: { post } }); // Pass the post data via state
+    navigate(`/post/${post.id}`, { state: { post, userName, userId } });
   };
 
-  //-------------------------------------------------------------------------------
-
-  
+  const handleLogout = () => {
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userId');
+    navigate('/login');
+  };
 
   return (
-    <div className="app-container">
-      <div className="posts-table">
-        <h2>Posts</h2>
+    <div className="main-container">
+      <div className="navbar">
+        <Sidenavbar />
+        <button onClick={handleLogout}>Logout</button>
+      </div>
+
+      <div className="post-view-container">
+        <h2>Welcome, {userName}!</h2>
+
         {posts.length === 0 ? (
           <p>No posts available.</p>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>User ID</th>
-                <th>Description</th>
-                <th>Media Files</th>
-                <th>Created At</th>
-                <th>Comment</th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts.map((post) => (
-                <tr key={post.id}>
-                  <td>{post.id}</td>
-                  <td>{post.userId}</td>
-                  <td>{post.description}</td>
-                  <td>
-                    {post.mediaFiles && post.mediaFiles.length > 0 ? (
-                      post.mediaFiles.map((file, index) => (
-                        <img
-                          key={index}
-                          src={`${API_BASE_URL}${file}`}
-                          alt={`Media ${index}`}
-                          style={{ width: '50px', height: '50px', marginRight: '5px' }}
-                        />
-                      ))
-                    ) : (
-                      'No media'
-                    )}
-                  </td>
-                  <td>{new Date(post.createdAt).toLocaleString()}</td>
-                  <td>
-                    <button onClick={() => handleCommentClick(post)}>
-                      Comment
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="all-post">
+            {posts.map((post) => (
+              <div key={post.id} className="one-post">
+                <div className="media-container">
+                  {post.mediaFiles && post.mediaFiles.length > 0 ? (
+                    <img
+                      className="img"
+                      src={`${API_BASE_URL}${post.mediaFiles[0]}`}
+                      alt="Post media"
+                    />
+                  ) : (
+                    <div className="no-available">
+                      <span>No media available</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="post_all_details">
+                  <h3 className="post_user">User Name: {post.userName || post.userId}</h3>
+                  <p className="description-container">{post.description}</p>
+                  <span className="post-date">
+                    Created At: {new Date(post.createdAt).toLocaleString()}
+                  </span>
+
+                  <div className="btn-container">
+                    <CommentIcon
+                      onClick={() => handleCommentClick(post)}
+                      className="btn"
+                    />
+                    <ThumbUpIcon className="btn" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
-
-      <div className='comment_section'>
-        
-        </div>
     </div>
-
- 
-
   );
 }
 

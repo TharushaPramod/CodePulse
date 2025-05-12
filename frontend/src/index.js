@@ -7,6 +7,9 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Comment from './pages/Comment';
 import PostViwe from './pages/PostView';
 import PostDetails from './pages/PostDetails';
+import Register from './pages/Register';
+import Login from './pages/Login';
+import Sidenavbar from './components/Sidenavbar';
 
 
 
@@ -15,10 +18,14 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <BrowserRouter>
     <Routes>
-      <Route path='/' element={<App/>} />
+      <Route path='/app' element={<App/>} />
       <Route path='/comment' element={<Comment/>} />
       <Route path='/view' element={<PostViwe/>} />
+      <Route path='/' element={<Register/>} />
+      <Route path='/login' element={<Login/>} />
+      <Route path='/navbar' element={<Sidenavbar/>} />
       <Route path="/post/:postId" element={<PostDetails />} />
+
  
      
 

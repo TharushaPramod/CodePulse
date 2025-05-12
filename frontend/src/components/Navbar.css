@@ -1,0 +1,53 @@
+.side_nav_bar {
+    height: 100vh;
+    width: 260px;
+    background-color: #111827;
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+  }
+  
+  .codepulse {
+    font-size: 2.5em;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #ffffff;
+    margin-bottom: 50px;
+  }
+  
+  .home_nav {
+    height: 4vh;
+    display: flex;
+    align-items: center;
+    font-size: 0.9em;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    color: #d1d5db;
+    margin-bottom: 12px;
+  }
+  
+  .home_nav:hover {
+    background-color: #44628d;
+    color: white;
+  }
+  
+ 
+  .home_nav.active {
+    background-color: #2563eb;
+    color: white;
+  }
+  
+  .home_nav.active .home_icon {
+    color: white;
+  }
+  
+  
