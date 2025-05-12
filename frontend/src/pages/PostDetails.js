@@ -5,12 +5,11 @@ import './Post.css';
 import UpdateIcon from '@mui/icons-material/Update';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-
-
 function PostDetails() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const post = state?.post;
+  const userName = state?.userName || 'Guest'; // Retrieve userName from state
 
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState({ content: '' });
@@ -62,14 +61,14 @@ function PostDetails() {
       if (editComment) {
         await axios.put(`${API_BASE_URL}/api/comments/${editComment.id}`, {
           content: editComment.content,
-          userId: editComment.userId,
+          userName: userName,
           postId: editComment.postId,
         });
         setEditComment(null);
       } else {
         await axios.post(`${API_BASE_URL}/api/comments`, {
           postId: post.id,
-          userId: post.userId,
+          userName: userName,
           content: newComment.content,
         });
         setNewComment({ content: '' });
@@ -106,7 +105,7 @@ function PostDetails() {
   };
 
   const handleBackClick = () => {
-    navigate('/');
+    navigate('/view');
   };
 
   if (!post) {
@@ -122,11 +121,11 @@ function PostDetails() {
     <div className='post-comment-section'>
       <div className='comment-section-sub'>
         <div className="post-details">
-         
           <div className='comment-section-media'>
             {post.mediaFiles && post.mediaFiles.length > 0 ? (
               post.mediaFiles.map((file, index) => (
-                <img className='img'
+                <img
+                  className='img'
                   key={index}
                   src={`${API_BASE_URL}${file}`}
                   alt={`Media ${index}`}
@@ -137,11 +136,14 @@ function PostDetails() {
             )}
           </div>
           <div className='comment-section-post-all-deatils'>
-          <div className='comment-section-name'><strong>UserName:</strong> {post.userId}</div>
-          <div className='comment-section-description'>{post.description}</div>
-          <div className='comment-seection-post-date'>{new Date(post.createdAt).toLocaleString()}</div>
+            <div className='comment-section-name'>
+              <strong>UserName:</strong> {post.userName || post.userId}
+            </div>
+            <div className='comment-section-description'>{post.description}</div>
+            <div className='comment-seection-post-date'>
+              {new Date(post.createdAt).toLocaleString()}
+            </div>
           </div>
-         
         </div>
 
         <div className="add-comment-section">
@@ -188,7 +190,7 @@ function PostDetails() {
               <div key={comment.id} className='all-comments-container-sub'>
                 <div className='all-comments'>
                   <p className='all-comment-section-userName'>
-                    <strong>User Name:</strong> {comment.userId}
+                     {comment.userName}
                   </p>
                   <div>
                     <p>{comment.content}</p>
@@ -196,29 +198,22 @@ function PostDetails() {
                       Posted on: {new Date(comment.createdAt).toLocaleString()}
                     </small>
                   </div>
-                  <div className='update-delete-comment-btn-container'>
-                    <UpdateIcon
-                     
-                      onClick={() => handleEditComment(comment)}
-                      disabled={loading}
-                    >
-                     
-                    </UpdateIcon>
-                    <DeleteIcon
-                    
-                  
-                      onClick={() => handleDeleteComment(comment.id)}
-                      disabled={loading}
-                    >
-                     
-                    </DeleteIcon>
-                  </div>
+                  {comment.userName === userName && ( // Only show buttons for comment owner
+                    <div className='update-delete-comment-btn-container'>
+                      <UpdateIcon
+                        onClick={() => handleEditComment(comment)}
+                        disabled={loading}
+                      />
+                      <DeleteIcon
+                        onClick={() => handleDeleteComment(comment.id)}
+                        disabled={loading}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ))
           )}
-
-          
         </div>
         <button className='back-to-post-btn' onClick={handleBackClick}>Back to Posts</button>
       </div>

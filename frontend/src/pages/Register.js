@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import './Register.css';
 
 function Register() {
@@ -10,7 +10,7 @@ function Register() {
     password: ''
   });
   const [message, setMessage] = useState('');
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,20 +18,25 @@ function Register() {
   };
 
   const handleRegister = async () => {
+    // Basic validation
+    if (!formData.name || !formData.email || !formData.password) {
+      setMessage('Error: All fields are required');
+      return;
+    }
+
     try {
       const response = await axios.post('http://localhost:8080/api/users/user', {
         name: formData.name,
         email: formData.email,
-        password: parseInt(formData.password) // Convert to number to match backend User model
+        password: formData.password // Send as string
       });
 
-      setMessage(`Registration successful for ${response.data.name}!`);
+      setMessage(`Registration successful for ${response.data.user.name}!`);
       setFormData({ name: '', email: '', password: '' });
       
-      // Navigate to Login page after a short delay to show success message
       setTimeout(() => {
-        navigate('/login'); // Adjust the path to match your route for Login.js
-      }, 1000); // 1-second delay
+        navigate('/login');
+      }, 1000);
     } catch (error) {
       setMessage(`Error: ${error.response?.data?.message || error.message}`);
     }

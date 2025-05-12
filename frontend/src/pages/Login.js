@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -9,7 +8,7 @@ function Login() {
     password: ''
   });
   const [message, setMessage] = useState('');
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,20 +16,36 @@ function Login() {
   };
 
   const handleLogin = async () => {
+    if (!formData.email || !formData.password) {
+      setMessage('Error: Email and password are required');
+      return;
+    }
+
     try {
       const response = await axios.post('http://localhost:8080/api/users/login', {
         email: formData.email,
-        password: parseInt(formData.password) // Convert to number to match backend, adjust if password is a string
+        password: formData.password
       });
 
-      setMessage(`Login successful for ${response.data.email}!`);
+      console.log('Login response:', response.data); // Debug the response
+
+      const userName = response.data.name;
+      if (!userName) {
+        throw new Error('User name not found in response');
+      }
+
+      // Store userName in localStorage immediately
+      localStorage.setItem('userName', userName);
+
+      setMessage(`Login successful for ${userName}!`);
       setFormData({ email: '', password: '' });
-      
-      // Navigate to home page after a short delay to show success message
+
+      // Navigate to PostList page with userName in state
       setTimeout(() => {
-        navigate('/view'); // Adjust the path to match your route for the home page
-      }, 1000); // 1-second delay
+        navigate('/view', { state: { userName } });
+      }, 1000);
     } catch (error) {
+      console.error('Login error:', error);
       setMessage(`Error: ${error.response?.data?.message || error.message}`);
     }
   };
