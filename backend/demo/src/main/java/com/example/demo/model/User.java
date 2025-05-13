@@ -8,7 +8,8 @@ public class User {
     @Id
     private String name;
     private String email;
-    private String password; // Changed from Long to String
+    private String password; // Nullable for OAuth users
+    private boolean isOAuthUser; // Indicates if user registered via OAuth
 
     // Getter and Setter for name
     public String getName() {
@@ -35,5 +36,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    // Getter and Setter for isOAuthUser
+    public boolean isOAuthUser() {
+        return isOAuthUser;
+    }
+
+    public void setOAuthUser(boolean isOAuthUser) {
+        this.isOAuthUser = isOAuthUser;
     }
 }

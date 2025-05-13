@@ -8,13 +8,13 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 
 function PostList() {
   const [posts, setPosts] = useState([]);
-  const [mediaErrors, setMediaErrors] = useState({}); // Track media loading errors
+  const [mediaErrors, setMediaErrors] = useState({});
   const API_BASE_URL = 'http://localhost:8080';
   const navigate = useNavigate();
   const location = useLocation();
 
   const userName = localStorage.getItem('userName') || 'Guest';
-  const userId = localStorage.getItem('userId') || 'Guest';
+  const userId = localStorage.getItem('userId') || 'Guest'; // Kept for compatibility, but userName is used for likes
 
   useEffect(() => {
     if (!userName || userName === 'Guest') {
@@ -27,7 +27,6 @@ function PostList() {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/posts`);
       console.log('Fetched posts:', response.data);
-      // Log media file URLs for debugging
       response.data.forEach(post => {
         if (post.mediaFiles && post.mediaFiles.length > 0) {
           post.mediaFiles.forEach(file => {
@@ -49,20 +48,42 @@ function PostList() {
     navigate(`/post/${post.id}`, { state: { post, userName, userId } });
   };
 
+  const handleLikeClick = async (postId) => {
+    try {
+      const post = posts.find(p => p.id === postId);
+      if (post.likedBy.includes(userName)) {
+        console.log('User has already liked this post');
+        return;
+      }
+
+      await axios.post(`${API_BASE_URL}/api/posts/${postId}/like`, { userName });
+
+      setPosts(posts.map(post =>
+        post.id === postId
+          ? {
+              ...post,
+              likeCount: post.likeCount + 1,
+              likedBy: [...post.likedBy, userName]
+            }
+          : post
+      ));
+    } catch (error) {
+      console.error('Error liking post:', error);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('userName');
     localStorage.removeItem('userId');
     navigate('/login');
   };
 
-  // Function to determine if a file is a video based on its extension
   const isVideoFile = (fileUrl) => {
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
     const extension = fileUrl?.toLowerCase().slice(fileUrl.lastIndexOf('.')) || '';
     return videoExtensions.includes(extension);
   };
 
-  // Handle media loading errors
   const handleMediaError = (postId, error) => {
     console.error(`Media error for post ${postId}:`, error);
     setMediaErrors(prev => ({
@@ -99,9 +120,9 @@ function PostList() {
                           className="media"
                           src={`${API_BASE_URL}${post.mediaFiles[0]}`}
                           controls
-                          muted // Required for autoplay in most browsers
-                          autoPlay // Optional: Enable autoplay (muted)
-                          loop // Optional: Loop the video
+                          muted
+                          autoPlay
+                          loop
                           onError={(e) => handleMediaError(post.id, e)}
                           alt="Post video"
                         />
@@ -122,18 +143,24 @@ function PostList() {
                 </div>
 
                 <div className="post_all_details">
-                  <h3 className="post_user">User Name: {post.userName || post.userId}</h3>
+                  <h3 className="post_user">User Name: {post.userName}</h3>
                   <p className="description-container">{post.description}</p>
                   <span className="post-date">
                     Created At: {new Date(post.createdAt).toLocaleString()}
                   </span>
+                  <div className="like-container">
+                    <span>{post.likeCount} Likes</span>
+                  </div>
 
                   <div className="btn-container">
                     <CommentIcon
                       onClick={() => handleCommentClick(post)}
                       className="btn"
                     />
-                    <ThumbUpIcon className="btn" />
+                    <ThumbUpIcon
+                      onClick={() => handleLikeClick(post.id)}
+                      className={`btn ${post.likedBy.includes(userName) ? 'liked' : ''}`}
+                    />
                   </div>
                 </div>
               </div>
