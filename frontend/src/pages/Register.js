@@ -63,7 +63,9 @@ function Register() {
       }
     }
   };
-
+  const handleGoHome = () => {
+  navigate('/login');
+};
   return (
     <div className="app-container">
       <div className="form-container">
@@ -107,6 +109,7 @@ function Register() {
           </div>
           <button type="submit">Register</button>
         </form>
+         <button onClick={handleGoHome} className="Register-button">Login</button>
         {message && (
           <p className={message.includes('Error') ? 'error-message' : 'success-message'}>
             {message}

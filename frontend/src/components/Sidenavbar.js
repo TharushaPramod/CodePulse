@@ -5,12 +5,13 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SchoolIcon from '@mui/icons-material/School';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import LogoutIcon from '@mui/icons-material/Logout';
 import './Navbar.css';
 
 export default function Sidenavbar() {
   return (
     <div className="side_nav_bar">
-      <div>
+      <div className="nav_top">
         <h1 className="codepulse">CODEPULSE</h1>
         <NavLink
           to="/view"
@@ -48,6 +49,13 @@ export default function Sidenavbar() {
           <h1>Notification</h1>
         </NavLink>
       </div>
+      <NavLink
+        to="/login"
+        className={({ isActive }) => `home_nav logout_nav ${isActive ? 'active' : ''}`}
+      >
+        <LogoutIcon className="home_icon" />
+        <h1>Logout</h1>
+      </NavLink>
     </div>
   );
 }

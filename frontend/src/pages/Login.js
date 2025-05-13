@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
+import './Login.css';
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -74,9 +75,15 @@ function Login() {
     setMessage('Error: Google Login failed');
   };
 
+  const handleGoHome = () => {
+  navigate('/');
+};
+
   return (
     <div className="app-container">
+        <h1 className="form-title">Code Pulse Login</h1>
       <div className="form-container">
+      
         <h2>Login</h2>
         <div className="form-group">
           <label htmlFor="email">Email</label>
@@ -111,6 +118,9 @@ function Login() {
             onError={handleGoogleError}
             useOneTap
           />
+
+          <button onClick={handleGoHome} className="Register-button">Register</button>
+
         </div>
         {message && (
           <p className={message.includes('Error') ? 'error-message' : 'success-message'}>
