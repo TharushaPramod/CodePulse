@@ -30,7 +30,31 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "Name, email, and password are required"));
         }
-        
+
+        // Validate username format
+        if (!newUser.getName().matches("^[a-zA-Z0-9_]{3,20}$")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Username must be 3-20 characters and contain only letters, numbers, or underscores"));
+        }
+
+        // Validate email format (basic regex)
+        if (!newUser.getEmail().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Invalid email format"));
+        }
+
+        // Check if username already exists
+        if (userRepository.findByName(newUser.getName()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "Username already exists, please choose another"));
+        }
+
+        // Check if email already exists
+        if (userRepository.findByEmail(newUser.getEmail()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "Email already exists, please use another"));
+        }
+
         newUser.setOAuthUser(false);
         User savedUser = userRepository.save(newUser);
         Map<String, Object> response = new HashMap<>();
@@ -70,6 +94,13 @@ public class UserController {
         String email = principal.getAttribute("email");
         String name = principal.getAttribute("name");
 
+        // Ensure unique username for OAuth2 users
+        String uniqueName = name;
+        int suffix = 1;
+        while (userRepository.findByName(uniqueName).isPresent()) {
+            uniqueName = name + suffix++;
+        }
+
         Optional<User> existingUser = userRepository.findByEmail(email);
         User user;
         if (existingUser.isPresent()) {
@@ -77,7 +108,7 @@ public class UserController {
         } else {
             user = new User();
             user.setEmail(email);
-            user.setName(name);
+            user.setName(uniqueName);
             user.setOAuthUser(true);
             user = userRepository.save(user);
         }

@@ -26,6 +26,18 @@ function Register() {
       return;
     }
 
+    // Client-side username format validation
+    if (!formData.name.match(/^[a-zA-Z0-9_]{3,20}$/)) {
+      setMessage('Error: Username must be 3-20 characters and contain only letters, numbers, or underscores');
+      return;
+    }
+
+    // Client-side email format validation
+    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      setMessage('Error: Invalid email format');
+      return;
+    }
+
     try {
       const response = await axios.post('http://localhost:8080/api/users/user', {
         name: formData.name,
@@ -43,7 +55,12 @@ function Register() {
         navigate('/login');
       }, 2000); // 2 seconds delay
     } catch (error) {
-      setMessage(`Error: ${error.response?.data?.message || error.message}`);
+      // Handle uniqueness errors
+      if (error.response?.status === 409) {
+        setMessage(`Error: ${error.response.data.message}`);
+      } else {
+        setMessage(`Error: ${error.response?.data?.message || error.message}`);
+      }
     }
   };
 
