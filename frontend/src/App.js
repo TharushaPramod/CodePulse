@@ -16,13 +16,24 @@ function App() {
 
     const API_BASE_URL = 'http://localhost:8080';
 
+    // Fetch posts from the backend
     const fetchPosts = useCallback(async () => {
         setIsLoading(true);
         setError('');
         try {
             const response = await axios.get(`${API_BASE_URL}/api/posts`);
             console.log('Fetched posts:', response.data);
-            setPosts(response.data);
+            // Log media file URLs to verify they are correct
+            response.data.forEach(post => {
+                if (post.mediaFiles && post.mediaFiles.length > 0) {
+                    post.mediaFiles.forEach(file => {
+                        console.log(`Media file URL: ${API_BASE_URL}${file}`);
+                    });
+                }
+            });
+            // Sort posts by createdAt in descending order (newest first) as a fallback
+            const sortedPosts = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setPosts(sortedPosts);
         } catch (error) {
             console.error('Error fetching posts:', error);
             setError('Failed to load posts. Please try again later.');
@@ -90,7 +101,7 @@ function App() {
             setDescription('');
             setFiles([]);
             document.querySelector('input[type="file"]').value = null;
-            await fetchPosts();
+            await fetchPosts(); // Refresh the post list
         } catch (error) {
             console.error('Error creating post:', error);
             setError('Failed to create post: ' + (error.response?.data?.message || error.message));
@@ -132,7 +143,7 @@ function App() {
             setEditingPost(null);
             setEditDescription('');
             setEditFiles([]);
-            await fetchPosts();
+            await fetchPosts(); // Refresh the post list
         } catch (error) {
             console.error('Error updating post:', error);
             setError('Failed to update post: ' + (error.response?.data?.message || error.message));
@@ -157,7 +168,7 @@ function App() {
                         type="file"
                         multiple
                         onChange={handleFileChange}
-                        accept="image/*"
+                        accept="image/*,video/*" // Allow both images and videos
                         disabled={isSubmitting}
                     />
                     <button className="submit-btn" type="submit" disabled={isSubmitting}>

@@ -8,6 +8,7 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 
 function PostList() {
   const [posts, setPosts] = useState([]);
+  const [mediaErrors, setMediaErrors] = useState({}); // Track media loading errors
   const API_BASE_URL = 'http://localhost:8080';
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,6 +27,14 @@ function PostList() {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/posts`);
       console.log('Fetched posts:', response.data);
+      // Log media file URLs for debugging
+      response.data.forEach(post => {
+        if (post.mediaFiles && post.mediaFiles.length > 0) {
+          post.mediaFiles.forEach(file => {
+            console.log(`Media file URL: ${API_BASE_URL}${file}`);
+          });
+        }
+      });
       setPosts(response.data);
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -46,6 +55,22 @@ function PostList() {
     navigate('/login');
   };
 
+  // Function to determine if a file is a video based on its extension
+  const isVideoFile = (fileUrl) => {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+    const extension = fileUrl?.toLowerCase().slice(fileUrl.lastIndexOf('.')) || '';
+    return videoExtensions.includes(extension);
+  };
+
+  // Handle media loading errors
+  const handleMediaError = (postId, error) => {
+    console.error(`Media error for post ${postId}:`, error);
+    setMediaErrors(prev => ({
+      ...prev,
+      [postId]: 'Failed to load media. Please try again later.'
+    }));
+  };
+
   return (
     <div className="main-container">
       <div className="navbar">
@@ -64,11 +89,31 @@ function PostList() {
               <div key={post.id} className="one-post">
                 <div className="media-container">
                   {post.mediaFiles && post.mediaFiles.length > 0 ? (
-                    <img
-                      className="img"
-                      src={`${API_BASE_URL}${post.mediaFiles[0]}`}
-                      alt="Post media"
-                    />
+                    <>
+                      {mediaErrors[post.id] ? (
+                        <div className="media-error">
+                          <span>{mediaErrors[post.id]}</span>
+                        </div>
+                      ) : isVideoFile(post.mediaFiles[0]) ? (
+                        <video
+                          className="media"
+                          src={`${API_BASE_URL}${post.mediaFiles[0]}`}
+                          controls
+                          muted // Required for autoplay in most browsers
+                          autoPlay // Optional: Enable autoplay (muted)
+                          loop // Optional: Loop the video
+                          onError={(e) => handleMediaError(post.id, e)}
+                          alt="Post video"
+                        />
+                      ) : (
+                        <img
+                          className="img"
+                          src={`${API_BASE_URL}${post.mediaFiles[0]}`}
+                          alt="Post media"
+                          onError={(e) => handleMediaError(post.id, e)}
+                        />
+                      )}
+                    </>
                   ) : (
                     <div className="no-available">
                       <span>No media available</span>
