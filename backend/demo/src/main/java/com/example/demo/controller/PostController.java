@@ -19,10 +19,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/posts")
-@CrossOrigin(origins = "http://localhost:3000") // Allow CORS for the frontend
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"}, allowCredentials = "true")
 public class PostController {
 
-    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/"; // Updated upload directory
+    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/";
 
     @Autowired
     private PostRepository postRepository;
@@ -31,8 +31,11 @@ public class PostController {
     @PostMapping
     public ResponseEntity<?> createPost(
             @RequestParam("description") String description,
-            @RequestParam(value = "files", required = false) MultipartFile[] files) throws Exception {
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
+            @RequestParam("userName") String userName) throws Exception {
         
+        System.out.println("Creating post: description=" + description + ", userName=" + userName + ", files=" + (files != null ? files.length : 0));
+
         // Create upload directory if it doesn't exist
         File uploadDir = new File(UPLOAD_DIR);
         if (!uploadDir.exists()) {
@@ -40,7 +43,7 @@ public class PostController {
         }
 
         Post post = new Post();
-        post.setUserId(1L); // Dummy user ID (replace with actual authentication)
+        post.setUserName(userName);
         post.setDescription(description);
         post.setCreatedAt(LocalDateTime.now());
 
@@ -49,10 +52,10 @@ public class PostController {
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
                     String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                    Path filePath = Paths.get(UPLOAD_DIR, fileName); // Use Paths.get for cleaner path construction
+                    Path filePath = Paths.get(UPLOAD_DIR, fileName);
                     Files.write(filePath, file.getBytes());
                     filePaths.add("/uploads/" + fileName);
-                    System.out.println("Saved file to: " + filePath.toString()); // Log the file path
+                    System.out.println("Saved file to: " + filePath.toString());
                 }
             }
         }
@@ -67,11 +70,11 @@ public class PostController {
     public ResponseEntity<?> editPost(
             @PathVariable String id,
             @RequestParam("description") String description,
-            @RequestParam(value = "files", required = false) MultipartFile[] files) throws Exception {
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
+            @RequestParam("userName") String userName) throws Exception {
 
         Post post = postRepository.findById(id).orElse(null);
-        Long currentUserId = 1L; // Dummy user ID (replace with actual authentication)
-        if (post == null || (post.getUserId() != null && currentUserId != null && !post.getUserId().equals(currentUserId))) {
+        if (post == null || !post.getUserName().equals(userName)) {
             return ResponseEntity.status(404).body("Post not found or you are not authorized to edit this post");
         }
 
@@ -103,7 +106,7 @@ public class PostController {
                     Path filePath = Paths.get(UPLOAD_DIR, fileName);
                     Files.write(filePath, file.getBytes());
                     filePaths.add("/uploads/" + fileName);
-                    System.out.println("Saved file to: " + filePath.toString()); // Log the file path
+                    System.out.println("Saved file to: " + filePath.toString());
                 }
             }
             post.setMediaFiles(filePaths);
@@ -115,11 +118,10 @@ public class PostController {
 
     // Delete a post
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePost(@PathVariable String id) {
+    public ResponseEntity<?> deletePost(@PathVariable String id, @RequestParam("userName") String userName) {
         try {
             Post post = postRepository.findById(id).orElse(null);
-            Long currentUserId = 1L; // Dummy user ID (replace with actual authentication)
-            if (post == null || (post.getUserId() != null && currentUserId != null && !post.getUserId().equals(currentUserId))) {
+            if (post == null || !post.getUserName().equals(userName)) {
                 return ResponseEntity.status(404).body("Post not found or you are not authorized to delete this post");
             }
 
@@ -148,9 +150,34 @@ public class PostController {
         }
     }
 
-    // Get all posts, sorted by createdAt in descending order (newest first)
+    // Get all posts, sorted by createdAt in descending order
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts() {
         return ResponseEntity.ok(postRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")));
+    }
+
+    // Like a post
+    @PostMapping("/{id}/like")
+    public ResponseEntity<?> likePost(@PathVariable String id, @RequestBody String userName) {
+        try {
+            Post post = postRepository.findById(id).orElse(null);
+            if (post == null) {
+                return ResponseEntity.status(404).body("Post not found");
+            }
+
+            userName = userName.replace("\"", "");
+            if (post.getLikedBy().contains(userName)) {
+                return ResponseEntity.status(400).body("User has already liked this post");
+            }
+
+            post.getLikedBy().add(userName);
+            post.setLikeCount(post.getLikeCount() + 1);
+
+            Post updatedPost = postRepository.save(post);
+            return ResponseEntity.ok(updatedPost);
+        } catch (Exception e) {
+            System.err.println("Error liking post with ID " + id + ": " + e.getMessage());
+            return ResponseEntity.status(500).body("Failed to like post: " + e.getMessage());
+        }
     }
 }

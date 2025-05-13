@@ -27,10 +27,12 @@ function PostList() {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/posts`);
       console.log('Fetched posts:', response.data);
-      // Normalize likedBy to ensure it's always an array
+      // Normalize likedBy and likeCount
       const normalizedPosts = response.data.map(post => ({
         ...post,
+        likeCount: post.likeCount || 0,
         likedBy: Array.isArray(post.likedBy) ? post.likedBy : [],
+        userName: post.userName || 'Unknown', // Fallback for userName
       }));
       normalizedPosts.forEach(post => {
         if (post.mediaFiles && post.mediaFiles.length > 0) {
@@ -61,19 +63,23 @@ function PostList() {
         return;
       }
 
-      await axios.post(`${API_BASE_URL}/api/posts/${postId}/like`, { userName });
+      const response = await axios.post(
+        `${API_BASE_URL}/api/posts/${postId}/like`,
+        JSON.stringify(userName),
+        { headers: { 'Content-Type': 'application/json' } }
+      );
 
-      setPosts(posts.map(post =>
-        post.id === postId
+      setPosts(posts.map(p =>
+        p.id === postId
           ? {
-              ...post,
-              likeCount: post.likeCount + 1,
-              likedBy: [...post.likedBy, userName],
+              ...p,
+              likeCount: response.data.likeCount,
+              likedBy: response.data.likedBy,
             }
-          : post
+          : p
       ));
     } catch (error) {
-      console.error('Error liking post:', error);
+      console.error('Error liking post:', error.response?.data || error.message);
     }
   };
 

@@ -1,5 +1,4 @@
 import React, { memo, useState } from 'react';
-import Sidenavbar from './components/Sidenavbar';
 
 const PostItem = ({
     post,
@@ -14,12 +13,11 @@ const PostItem = ({
     setEditingPost,
     handleDelete,
     handleEditStart,
-    API_BASE_URL
+    API_BASE_URL,
+    userName
 }) => {
-    // State to track if a media file has failed to load
     const [failedMedia, setFailedMedia] = useState(new Set());
 
-    // Log to debug re-rendering
     console.log(`Rendering PostItem for post ${post.id}`);
 
     const handleMediaError = (file) => {
@@ -29,7 +27,6 @@ const PostItem = ({
         }
     };
 
-    // Determine if the file is an image or video based on its extension
     const renderMedia = (file, index) => {
         const fileExtension = file.split('.').pop().toLowerCase();
         const isVideo = ['mp4', 'webm', 'ogg'].includes(fileExtension);
@@ -65,12 +62,6 @@ const PostItem = ({
     };
 
     return (
-        <div>
-        <div className="navbar">
-                <Sidenavbar />
-               
-              </div>
-       
         <div className="post">
             
             {editingPost === post.id ? (
@@ -85,7 +76,7 @@ const PostItem = ({
                         type="file"
                         multiple
                         onChange={handleEditFileChange}
-                        accept="image/*,video/*" // Allow both images and videos
+                        accept="image/*,video/*"
                         disabled={isSubmitting}
                     />
                     <div className="post-buttons">
@@ -104,12 +95,15 @@ const PostItem = ({
                 </form>
             ) : (
                 <>
+                    <h3>{post.userName}</h3>
                     <p>{post.description}</p>
                     {post.mediaFiles && post.mediaFiles.length > 0 ? (
                         post.mediaFiles.map((file, index) => renderMedia(file, index))
                     ) : (
                         <p className="no-media">No media files.</p>
                     )}
+                    <p>Likes: {post.likeCount}</p>
+                    <p>Posted: {new Date(post.createdAt).toLocaleString()}</p>
                     <div className="post-buttons">
                         <button className="delete-btn" onClick={() => handleDelete(post.id)}>
                             Delete
@@ -120,7 +114,6 @@ const PostItem = ({
                     </div>
                 </>
             )}
-        </div>
         </div>
     );
 };
