@@ -108,6 +108,13 @@ function PostDetails() {
     navigate('/view');
   };
 
+  // Function to check if the file is a video
+  const isVideoFile = (fileUrl) => {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+    const extension = fileUrl?.toLowerCase().slice(fileUrl.lastIndexOf('.')) || '';
+    return videoExtensions.includes(extension);
+  };
+
   if (!post) {
     return (
       <div>
@@ -123,21 +130,34 @@ function PostDetails() {
         <div className="post-details">
           <div className='comment-section-media'>
             {post.mediaFiles && post.mediaFiles.length > 0 ? (
-              post.mediaFiles.map((file, index) => (
-                <img
-                  className='img'
-                  key={index}
-                  src={`${API_BASE_URL}${file}`}
-                  alt={`Media ${index}`}
-                />
-              ))
+              post.mediaFiles.map((file, index) => {
+                const fullUrl = `${API_BASE_URL}${file}`;
+                return isVideoFile(file) ? (
+                  <video
+                    key={index}
+                    className="media"
+                    src={fullUrl}
+                    controls
+                    muted
+                    autoPlay
+                    loop
+                  />
+                ) : (
+                  <img
+                    key={index}
+                    className="img"
+                    src={fullUrl}
+                    alt={`Media ${index}`}
+                  />
+                );
+              })
             ) : (
               <p>No media</p>
             )}
           </div>
           <div className='comment-section-post-all-deatils'>
             <div className='comment-section-name'>
-              <strong>UserName:</strong> {post.userName || post.userId}
+             {post.userName || post.userId}
             </div>
             <div className='comment-section-description'>{post.description}</div>
             <div className='comment-seection-post-date'>

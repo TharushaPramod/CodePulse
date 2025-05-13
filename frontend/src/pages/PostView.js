@@ -154,7 +154,7 @@ function PostList() {
                 </div>
 
                 <div className="post_all_details">
-                  <h3 className="post_user">User Name: {post.userName}</h3>
+                  <h3 className="post_user"> {post.userName}</h3>
                   <p className="description-container">{post.description}</p>
                   <span className="post-date">
                     Created At: {new Date(post.createdAt).toLocaleString()}
