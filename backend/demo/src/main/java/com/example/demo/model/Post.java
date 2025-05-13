@@ -4,19 +4,16 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "posts")
 public class Post {
     @Id
     private String id;
-    private String userName; // Changed from Long userId to String userName to match User model
+    private Long userId;
     private String description;
     private List<String> mediaFiles;
     private LocalDateTime createdAt;
-    private int likeCount = 0; // New field for like count
-    private List<String> likedBy = new ArrayList<>(); // New field to track users who liked the post
 
     // Getters and setters
     public String getId() {
@@ -27,12 +24,12 @@ public class Post {
         this.id = id;
     }
 
-    public String getUserName() {
-        return userName;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getDescription() {
@@ -57,21 +54,5 @@ public class Post {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public int getLikeCount() {
-        return likeCount;
-    }
-
-    public void setLikeCount(int likeCount) {
-        this.likeCount = likeCount;
-    }
-
-    public List<String> getLikedBy() {
-        return likedBy;
-    }
-
-    public void setLikedBy(List<String> likedBy) {
-        this.likedBy = likedBy;
     }
 }

@@ -14,7 +14,7 @@ function PostList() {
   const location = useLocation();
 
   const userName = localStorage.getItem('userName') || 'Guest';
-  const userId = localStorage.getItem('userId') || 'Guest'; // Kept for compatibility, but userName is used for likes
+  const userId = localStorage.getItem('userId') || 'Guest';
 
   useEffect(() => {
     if (!userName || userName === 'Guest') {
@@ -27,14 +27,19 @@ function PostList() {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/posts`);
       console.log('Fetched posts:', response.data);
-      response.data.forEach(post => {
+      // Normalize likedBy to ensure it's always an array
+      const normalizedPosts = response.data.map(post => ({
+        ...post,
+        likedBy: Array.isArray(post.likedBy) ? post.likedBy : [],
+      }));
+      normalizedPosts.forEach(post => {
         if (post.mediaFiles && post.mediaFiles.length > 0) {
           post.mediaFiles.forEach(file => {
             console.log(`Media file URL: ${API_BASE_URL}${file}`);
           });
         }
       });
-      setPosts(response.data);
+      setPosts(normalizedPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
@@ -63,7 +68,7 @@ function PostList() {
           ? {
               ...post,
               likeCount: post.likeCount + 1,
-              likedBy: [...post.likedBy, userName]
+              likedBy: [...post.likedBy, userName],
             }
           : post
       ));
@@ -88,7 +93,7 @@ function PostList() {
     console.error(`Media error for post ${postId}:`, error);
     setMediaErrors(prev => ({
       ...prev,
-      [postId]: 'Failed to load media. Please try again later.'
+      [postId]: 'Failed to load media. Please try again later.',
     }));
   };
 
