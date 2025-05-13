@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
+import './Login.css';
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -27,20 +29,15 @@ function Login() {
         password: formData.password
       });
 
-      console.log('Login response:', response.data); // Debug the response
-
       const userName = response.data.name;
       if (!userName) {
         throw new Error('User name not found in response');
       }
 
-      // Store userName in localStorage immediately
       localStorage.setItem('userName', userName);
-
       setMessage(`Login successful for ${userName}!`);
       setFormData({ email: '', password: '' });
 
-      // Navigate to PostList page with userName in state
       setTimeout(() => {
         navigate('/view', { state: { userName } });
       }, 1000);
@@ -50,9 +47,43 @@ function Login() {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      // Send the Google credential to the backend
+      const response = await axios.post('http://localhost:8080/api/users/oauth2/success', {
+        credential: credentialResponse.credential
+      });
+
+      const userName = response.data.name;
+      if (!userName) {
+        throw new Error('User name not found in response');
+      }
+
+      localStorage.setItem('userName', userName);
+      setMessage(`Google Login successful for ${userName}!`);
+
+      setTimeout(() => {
+        navigate('/view', { state: { userName } });
+      }, 1000);
+    } catch (error) {
+      console.error('Google login error:', error);
+      setMessage(`Error: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setMessage('Error: Google Login failed');
+  };
+
+  const handleGoHome = () => {
+  navigate('/');
+};
+
   return (
     <div className="app-container">
+        <h1 className="form-title">Code Pulse Login</h1>
       <div className="form-container">
+      
         <h2>Login</h2>
         <div className="form-group">
           <label htmlFor="email">Email</label>
@@ -77,6 +108,20 @@ function Login() {
           />
         </div>
         <button onClick={handleLogin}>Login</button>
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+          <h3>Or Login with Google</h3>
+          <a href="http://localhost:8080/oauth2/authorization/google">
+  <button>Login with Google</button>
+</a>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            useOneTap
+          />
+
+          <button onClick={handleGoHome} className="Register-button">Register</button>
+
+        </div>
         {message && (
           <p className={message.includes('Error') ? 'error-message' : 'success-message'}>
             {message}
