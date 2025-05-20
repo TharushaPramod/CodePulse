@@ -1,9 +1,7 @@
-// CommentController.java
 package com.example.demo.controller;
 
 import com.example.demo.model.Comment;
 import com.example.demo.repository.CommentRepository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +19,7 @@ public class CommentController {
     // Add a comment
     @PostMapping
     public Comment addComment(@RequestBody Comment comment) {
-        comment.setCreatedAt(LocalDateTime.now()); // Set the creation time
+        comment.setCreatedAt(LocalDateTime.now());
         return commentRepository.save(comment);
     }
 
@@ -51,7 +49,7 @@ public class CommentController {
         return commentRepository.findById(id)
                 .map(comment -> {
                     comment.setContent(updatedComment.getContent());
-                    comment.setUserId(updatedComment.getUserId());
+                    comment.setUserName(updatedComment.getUserName()); // Update userName
                     return ResponseEntity.ok(commentRepository.save(comment));
                 })
                 .orElse(ResponseEntity.notFound().build());

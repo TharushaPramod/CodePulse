@@ -13,24 +13,57 @@ const PostItem = ({
     setEditingPost,
     handleDelete,
     handleEditStart,
-    API_BASE_URL
+    API_BASE_URL,
+    userName
 }) => {
-    // State to track if an image has failed to load (to prevent repeated onError calls)
-    const [failedImages, setFailedImages] = useState(new Set());
+    const [failedMedia, setFailedMedia] = useState(new Set());
 
-    // Log to debug re-rendering
     console.log(`Rendering PostItem for post ${post.id}`);
 
-    const handleImageError = (file, e) => {
-        if (!failedImages.has(file)) {
-            setFailedImages(prev => new Set(prev).add(file));
-            e.target.src = '/fallback-image.jpg';
-            console.error(`Failed to load image: ${file}`);
+    const handleMediaError = (file) => {
+        if (!failedMedia.has(file)) {
+            setFailedMedia(prev => new Set(prev).add(file));
+            console.error(`Failed to load media: ${file}`);
+        }
+    };
+
+    const renderMedia = (file, index) => {
+        const fileExtension = file.split('.').pop().toLowerCase();
+        const isVideo = ['mp4', 'webm', 'ogg'].includes(fileExtension);
+        const mediaUrl = `${API_BASE_URL}${file}`;
+
+        if (failedMedia.has(file)) {
+            return <p key={`${post.id}-${index}`} className="media-error">Failed to load media.</p>;
+        }
+
+        if (isVideo) {
+            return (
+                <video
+                    key={`${post.id}-${index}`}
+                    controls
+                    className="post-media"
+                    onError={() => handleMediaError(file)}
+                >
+                    <source src={mediaUrl} type={`video/${fileExtension}`} />
+                    Your browser does not support the video tag.
+                </video>
+            );
+        } else {
+            return (
+                <img
+                    key={`${post.id}-${index}`}
+                    src={mediaUrl}
+                    alt="Post media"
+                    className="post-media"
+                    onError={() => handleMediaError(file)}
+                />
+            );
         }
     };
 
     return (
         <div className="post">
+            
             {editingPost === post.id ? (
                 <form onSubmit={(e) => handleEditSubmit(e, post.id)}>
                     <textarea
@@ -43,7 +76,7 @@ const PostItem = ({
                         type="file"
                         multiple
                         onChange={handleEditFileChange}
-                        accept="image/*"
+                        accept="image/*,video/*"
                         disabled={isSubmitting}
                     />
                     <div className="post-buttons">
@@ -62,20 +95,15 @@ const PostItem = ({
                 </form>
             ) : (
                 <>
+                    <h3>{post.userName}</h3>
                     <p>{post.description}</p>
                     {post.mediaFiles && post.mediaFiles.length > 0 ? (
-                        post.mediaFiles.map((file, index) => (
-                            <img
-                                key={`${post.id}-${index}`} // Use a unique key
-                                src={`${API_BASE_URL}${file}`}
-                                alt="Post media"
-                                className="post-image"
-                                onError={(e) => handleImageError(file, e)}
-                            />
-                        ))
+                        post.mediaFiles.map((file, index) => renderMedia(file, index))
                     ) : (
                         <p className="no-media">No media files.</p>
                     )}
+                    <p>Likes: {post.likeCount}</p>
+                    <p>Posted: {new Date(post.createdAt).toLocaleString()}</p>
                     <div className="post-buttons">
                         <button className="delete-btn" onClick={() => handleDelete(post.id)}>
                             Delete

@@ -1,15 +1,15 @@
 package com.example.demo.model;
 
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "user") // Collection name in MongoDB
+@Document(collection = "user")
 public class User {
     @Id
     private String name;
-    private String email; // To associate the comment with a post
-    private Long password; // To associate the comment with a user
+    private String email;
+    private String password; // Nullable for OAuth users
+    private boolean isOAuthUser; // Indicates if user registered via OAuth
 
     // Getter and Setter for name
     public String getName() {
@@ -30,11 +30,20 @@ public class User {
     }
 
     // Getter and Setter for password
-    public Long getPassword() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(Long password) {
+    public void setPassword(String password) {
         this.password = password;
+    }
+
+    // Getter and Setter for isOAuthUser
+    public boolean isOAuthUser() {
+        return isOAuthUser;
+    }
+
+    public void setOAuthUser(boolean isOAuthUser) {
+        this.isOAuthUser = isOAuthUser;
     }
 }
