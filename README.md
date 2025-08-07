@@ -52,34 +52,6 @@
 
 ---
 
-## 🚧 Roadmap
-- [ ] Direct messaging system
-- [ ] Topic-based discussion boards
-- [ ] Learning streaks and badges
-- [ ] Code snippet sharing support
-- [ ] Mobile responsiveness and PWA support
-
----
-
-## 🤝 Contribution
-
-We welcome contributions from the community!  
-To contribute:
-
-1. Fork the repository
-2. Create a new branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes: `git commit -m 'Add your message here'`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
 ## 🙌 Join the Pulse
 
 Start coding, keep learning, and share your journey with the world.  
