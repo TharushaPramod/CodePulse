@@ -43,8 +43,8 @@
 
 ## 🛠️ Tech Stack 
 
-- **Frontend:** React.js , Tailwind CSS
-- **Backend:** Node.js, Express.js
+- **Frontend:** React.js ,  CSS
+- **Backend:** Spring Boot (Java)  
 - **Database:** MongoDB / Firebase
 - **Authentication:** OAuth 2.0 (Google, GitHub, etc.)
 
