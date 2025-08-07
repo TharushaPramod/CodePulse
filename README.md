@@ -41,14 +41,13 @@
 
 ---
 
-## 🛠️ Tech Stack (Suggested)
-> _You can update this based on actual implementation_
+## 🛠️ Tech Stack 
 
-- **Frontend:** React / Next.js, Tailwind CSS
+- **Frontend:** React.js , Tailwind CSS
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB / Firebase
 - **Authentication:** OAuth 2.0 (Google, GitHub, etc.)
-- **Hosting:** Vercel / Netlify / Heroku
+
 
 ---
 
